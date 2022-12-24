@@ -15,10 +15,10 @@ async def deltemedia(bot, message):
     """Delete file from database"""
     reply = message
     if reply and reply.media:
-        #msg = await message.reply("Processing...⏳", quote=True)
+        msg = await message.reply("Processing...⏳", quote=True)
         pass
     else:
-        #await message.reply('Reply to file with /delete which you want to delete', quote=True)
+        await message.reply('Reply to file with /delete which you want to delete', quote=True)
         return
 
     for file_type in ("document", "video", "audio"):
@@ -26,7 +26,7 @@ async def deltemedia(bot, message):
         if media is not None:
             break
     else:
-        #await msg.edit('This is not supported file format')
+        await msg.edit('This is not supported file format')
         return
 
     file_id, file_ref = unpack_new_file_id(media.file_id)
