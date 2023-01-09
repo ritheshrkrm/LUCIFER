@@ -190,7 +190,7 @@ async def advantage_spoll_choker(bot, query):
     await query.answer(script.TOP_ALRT_MSG)
     k = await manual_filters(bot, query.message, text=movie)
     if k == False:
-        files, offset, total_results = await get_search_results(query.message.chat.id, movie, offset=0, filter=True)
+        files, offset, total_results = await get_search_results(movie, offset=0, filter=True)
         if files:
             k = (movie, files, offset, total_results)
             await auto_filter(bot, query, k)
@@ -1294,76 +1294,25 @@ async def auto_filter(client, msg, spoll=False):
         await msg.message.delete()
 
 async def advantage_spell_chok(msg):
-    user = msg.from_user.id if msg.from_user else 0
-    settings = await get_settings(msg.chat.id)
-    query = re.sub(
-        r"\b(pl(i|e)*?(s|z+|ease|se|ese|(e+)s(e)?)|((send|snd|giv(e)?|gib)(\sme)?)|movie(s)?|new|latest|br((o|u)h?)*|^h(e|a)?(l)*(o)*|mal(ayalam)?|t(h)?amil|file|that|find|und(o)*|kit(t(i|y)?)?o(w)?|thar(u)?(o)*w?|kittum(o)*|aya(k)*(um(o)*)?|full\smovie|any(one)|with\ssubtitle(s)?)",
-        "", msg.text, flags=re.IGNORECASE)  # plis contribute some common words
-    query = query.strip() + " movie"
-    try:
-        movies = await get_poster(msg.text, bulk=True)
-    except Exception as e:
-        logger.exception(e)
-        search = msg.text.replace(" ", "+")
-        button = [[
-                   InlineKeyboardButton(' ɢᴏᴏɢʟᴇ ', url=f"https://google.com/search?q={search}"),
-                   InlineKeyboardButton('ɪᴍᴅʙ', url=f"https://imdb.com/find?q={search}")
-        ]]
-        k = await msg.reply_photo(
-            photo=SPELL_IMG, 
-            caption=script.I_CUDNT,
-            reply_markup=InlineKeyboardMarkup(button)
-        )
-        await asyncio.sleep(SPL_DELETE_TIME)
-        await k.delete()
-        await msg.delete()
-        return
-    movielist = []
-    if not movies:
-        search = msg.text.replace(" ", "+")
-        button = [[
-                   InlineKeyboardButton(' ɢᴏᴏɢʟᴇ ', url=f"https://google.com/search?q={search}"),
-                   InlineKeyboardButton('ɪᴍᴅʙ', url=f"https://imdb.com/find?q={search}")
-        ]]
-        k = await msg.reply_photo(
-            photo=SPELL_IMG, 
-            caption=script.I_CUDNT,
-            reply_markup=InlineKeyboardMarkup(button)
-        )
-        await asyncio.sleep(SPL_DELETE_TIME)
-        await k.delete()
-        await msg.delete()
-        return
-    movielist += [movie.get('title') for movie in movies]
-    movielist += [f"{movie.get('title')} {movie.get('year')}" for movie in movies]
-    SPELL_CHECK[msg.id] = movielist
-    btn = [
-        [
+    search = msg.text.replace(" ", "+")
+    btn = [[
+        InlineKeyboardButton(
+            text="ɪɴsᴛʀᴜᴄᴛɪᴏɴs",
+            callback_data="splmd"
+        ),
             InlineKeyboardButton(
-                text=movie_name.strip(),
-                callback_data=f"spolling#{user}#{k}",
-            )
-        ]
-        for k, movie_name in enumerate(movielist)
-    ]
-    spl = await msg.reply_photo(
-        photo=SPELL_IMG,
-        caption=script.CUDNT_FND,
+            text="ɢᴏᴏɢʟᴇ",
+            url=f"https://google.com/search?q={search}"
+        )
+    ]]
+    spl = await msg.reply(
+        text=script.CUDNT_FND,
         reply_markup=InlineKeyboardMarkup(btn)
     )
-    try:
-        if settings['auto_delete']:
-            await asyncio.sleep(SPL_DELETE_TIME)
-            await spl.delete()
-            await msg.delete()
-    except KeyError:
-            grpid = await active_connection(str(message.from_user.id))
-            await save_group_settings(grpid, 'auto_delete', True)
-            settings = await get_settings(message.chat.id)
-            if settings['auto_delete']:
-                await asyncio.sleep(SPL_DELETE_TIME)
-                await spl.delete()
-                await msg.delete()
+    await asyncio.sleep(SPL_DELETE_TIME)
+    await spl.delete()
+    await msg.delete()
+    return
 
 async def manual_filters(client, message, text=False):
     settings = await get_settings(message.chat.id)
